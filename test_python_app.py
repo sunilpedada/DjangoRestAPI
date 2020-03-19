@@ -13,8 +13,13 @@ def post():
     print(response.json())
     print(response.status_code)
 def update(id):
-    update_data={"ename":"hello","esalary":600,"eaddress":"rty"}
+    update_data={"ename":"gud","esalary":600,"eaddress":"rty"}
     response=requests.put("http://127.0.0.1:8000/api/get_call_1/"+str(id)+"/",data=json.dumps(update_data))
     print(response.json())
     print(response.status_code)
-post()
+def delete(id):
+    response=requests.delete("http://127.0.0.1:8000/api/get_call_1/"+str(id)+"/")
+    print(response.json())
+    print(response.status_code)
+delete(4)
+    

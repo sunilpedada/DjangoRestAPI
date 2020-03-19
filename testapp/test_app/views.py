@@ -50,16 +50,39 @@ class Admin_Registeration(serializer_mixin,View):
         if not valid:
             msg=json.dumps({"msg":"entered invalid data"})
             return self.http_response(msg,status=400)
+        json_load=json.loads(request_body_data)
+        print("emp_data",emp_data.ename)
+        original_data={"ename":emp_data.ename,
+                        "esalary":emp_data.esalary,
+                        "eaddress":emp_data.eaddress}
+        original_data.update(json_load)
+        print("original data",original_data)
+        form=employeesforms(original_data,instance=emp_data)
+        print("forms data",form)
+        if form.is_valid():
+            form.save(commit=True)
+            qs=emp.objects.get(id=id)
+            json_data=self.get_serializer_mixin([qs,])
+            return self.http_response(json_data,status=200)
+        if form.errors:
+            msg=json.dumps(form.errors)
+            return self.http_response(msg,status=400)
+    def delete(self,request,id,*args,**kwargs):
         try:
-            json_load=json.loads(request_body_data)
-            db_data=emp(ename=json_load["ename"],esalary=json_load["esalary"],eaddress=json_load["eaddress"],instance=emp)
-            db_data.save()
-            print("fffff",json_load["ename"])
-            qs=emp.objects.get(ename=json_load["ename"])
-            data_db=self.get_serializer_mixin([qs,])
-        except ValueError:
-            return self.http_response(status=400)
-        return self.http_response(data_db,status=200)
+            user_details=emp.objects.get(id=id)
+            print("user details",user_details)
+        except emp.DoesNotExist:
+            user_details=None 
+        print("user details",user_details)
+        if user_details==None:
+            msg=json.dumps({"msg":"user not exist"})
+            return HttpResponse(msg,status=400)
+        status_code,msg=user_details.delete()
+        if status_code==1:
+            success=json.dumps({"msg":"deleted successfuly"})
+            return HttpResponse(success,status=200)
+        msg=json.dumps({"msg":"unable to delete"})
+        return HttpResponse(msg,status=400)
 class Admin_RegisterationCRD(View):
     def get(self,request,*args,**kwargs):
         data=emp.objects.all()
